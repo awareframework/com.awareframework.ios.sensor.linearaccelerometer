@@ -7,12 +7,26 @@
 //
 
 import UIKit
+import com_awareframework_ios_sensor_linearaccelerometer
 
 class ViewController: UIViewController {
+    
+    var sensor:LinearAccelerometerSensor?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        sensor = LinearAccelerometerSensor.init(LinearAccelerometerSensor.Config().apply{config in
+            config.debug = true
+            config.sensorObserver = Observer()
+        });
+        sensor?.start()
+    }
+    
+    class Observer:LinearAccelerometerObserver{
+        func onChanged(data: LinearAccelerometerData) {
+            print(data)
+        }
     }
 
     override func didReceiveMemoryWarning() {
