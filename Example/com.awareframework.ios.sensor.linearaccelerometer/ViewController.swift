@@ -24,7 +24,7 @@ class ViewController: UIViewController {
     }
     
     class Observer:LinearAccelerometerObserver{
-        func onChanged(data: LinearAccelerometerData) {
+        func onDataChanged(data: LinearAccelerometerData) {
             print(data)
         }
     }

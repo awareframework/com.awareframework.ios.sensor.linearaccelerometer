@@ -8,8 +8,8 @@
 
 Pod::Spec.new do |s|
   s.name             = 'com.awareframework.ios.sensor.linearaccelerometer'
-  s.version          = '0.1.0'
-  s.summary          = 'A short description of com.awareframework.ios.sensor.linearaccelerometer.'
+  s.version          = '0.1.1'
+  s.summary          = 'com.awareframework.ios.sensor.linearaccelerometer (Linear Accelerometer) is a sensor module for Aware Framework.'
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -18,7 +18,9 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-TODO: Add long description of the pod here.
+  com.awareframework.ios.sensor.linearaccelerometer is a sensor module for Aware Framework. This module provides Linear Accelerometer Data which indicates the device's user-initiated acceleration. This data is provided by Core Motion’s sensor fusion algorithms.
+    
+    https://developer.apple.com/documentation/coremotion/cmmotionmanager
                        DESC
 
   s.homepage         = 'https://github.com/awareframework/com.awareframework.ios.sensor.linearaccelerometer'
@@ -30,7 +32,7 @@ TODO: Add long description of the pod here.
 
   s.ios.deployment_target = '10.0'
 
-  s.swift_version = '4.0'
+  s.swift_version = '4.2'
 
   s.source_files = 'com.awareframework.ios.sensor.linearaccelerometer/Classes/**/*'
   

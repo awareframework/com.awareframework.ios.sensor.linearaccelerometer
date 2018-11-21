@@ -33,7 +33,7 @@ extension LinearAccelerometerSensor{
 }
 
 public protocol LinearAccelerometerObserver {
-    func onChanged(data:LinearAccelerometerData)
+    func onDataChanged(data:LinearAccelerometerData)
 }
 
 public class LinearAccelerometerSensor: AwareSensor {
@@ -58,7 +58,7 @@ public class LinearAccelerometerSensor: AwareSensor {
          * 5 - sample per second
          * 20 - sample per second
          */
-        public var interval: Int = 5
+        public var frequency: Int = 5
         
         /**
          * Period to save data in minutes. (optional)
@@ -95,7 +95,7 @@ public class LinearAccelerometerSensor: AwareSensor {
     
     public override func start() {
         if self.motion.isDeviceMotionAvailable && !self.motion.isDeviceMotionActive {
-            self.motion.deviceMotionUpdateInterval = 1.0/Double(self.CONFIG.interval)
+            self.motion.deviceMotionUpdateInterval = 1.0/Double(self.CONFIG.frequency)
             self.motion.startDeviceMotionUpdates(to: .main) { (deviceMotionData, error) in
                 if let dmData = deviceMotionData {
                     let x = dmData.userAcceleration.x
@@ -123,7 +123,7 @@ public class LinearAccelerometerSensor: AwareSensor {
                     data.eventTimestamp = Int64(dmData.timestamp*1000)
                     
                     if let observer = self.CONFIG.sensorObserver {
-                        observer.onChanged(data: data)
+                        observer.onDataChanged(data: data)
                     }
                     
                     self.dataBuffer.append(data)
@@ -140,7 +140,7 @@ public class LinearAccelerometerSensor: AwareSensor {
                     self.LAST_SAVE = currentTime
                 }
             }
-            if self.CONFIG.debug{ print(LinearAccelerometerSensor.TAG, "Gyroscope sensor active: \(self.CONFIG.interval) hz") }
+            if self.CONFIG.debug{ print(LinearAccelerometerSensor.TAG, "Gyroscope sensor active: \(self.CONFIG.frequency) hz") }
             self.notificationCenter.post(name: .actionAwareLinearAccelerometerStart, object:nil)
         }
     }

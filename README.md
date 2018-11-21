@@ -1,6 +1,6 @@
 # Aware Linear Accelerometer
 
-[![CI Status](https://img.shields.io/travis/tetujin/com.awareframework.ios.sensor.linearaccelerometer.svg?style=flat)](https://travis-ci.org/tetujin/com.awareframework.ios.sensor.linearaccelerometer)
+[![CI Status](https://img.shields.io/travis/awareframework/com.awareframework.ios.sensor.linearaccelerometer.svg?style=flat)](https://travis-ci.org/awareframework/com.awareframework.ios.sensor.linearaccelerometer)
 [![Version](https://img.shields.io/cocoapods/v/com.awareframework.ios.sensor.linearaccelerometer.svg?style=flat)](https://cocoapods.org/pods/com.awareframework.ios.sensor.linearaccelerometer)
 [![License](https://img.shields.io/cocoapods/l/com.awareframework.ios.sensor.linearaccelerometer.svg?style=flat)](https://cocoapods.org/pods/com.awareframework.ios.sensor.linearaccelerometer)
 [![Platform](https://img.shields.io/cocoapods/p/com.awareframework.ios.sensor.linearaccelerometer.svg?style=flat)](https://cocoapods.org/pods/com.awareframework.ios.sensor.linearaccelerometer)
@@ -10,6 +10,7 @@
 To run the example project, clone the repo, and run `pod install` from the Example directory first.
 
 ## Requirements
+iOS 10 or later
 
 ## Installation
 
@@ -25,20 +26,76 @@ pod 'com.awareframework.ios.sensor.linearaccelerometer'
 import com_awareframework_ios_sensor_linearaccelerometer
 ```
 
+## Public functions
+
+### LinearAccelerometerSensor
+
++ `init(config:LinearAccelerometerSensor.Config?)` : Initializes the linear-accelerometer sensor with the optional configuration.
++ `start()`: Starts the gyroscope sensor with the optional configuration.
++ `stop()`: Stops the service.
+
+### LinearAccelerometerSensor.Config
+
+Class to hold the configuration of the sensor.
+
+#### Fields
++ `sensorObserver: LinearAccelerometerObserver`: Callback for live data updates.
++ `frequency: Int`: Data samples to collect per second (Hz). (default = 5)
++ `period: Double`: Period to save data in minutes. (default = 1)
++ `threshold: Double`: If set, do not record consecutive points if change in value is less than the set value.
++ `enabled: Boolean` Sensor is enabled or not. (default = `false`)
++ `debug: Boolean` enable/disable logging to Xcode console. (default = `false`)
++ `label: String` Label for the data. (default = "")
++ `deviceId: String` Id of the device that will be associated with the events and the sensor. (default = "")
++ `dbEncryptionKey` Encryption key for the database. (default = `null`)
++ `dbType: Engine` Which db engine to use for saving data. (default = `Engine.DatabaseType.NONE`)
++ `dbPath: String` Path of the database. (default = "aware_gyroscope")
++ `dbHost: String` Host for syncing the database. (default = `null`)
+
+## Broadcasts
+
+### Fired Broadcasts
+
++ `LinearAccelerometerSensor.ACTION_AWARE_GYROSCOPE` fired when gyroscope saved data to db after the period ends.
+
+### Received Broadcasts
+
++ `LinearAccelerometerSensor.ACTION_AWARE_LINEAR_ACCELEROMETER_START`: received broadcast to start the sensor.
++ `LinearAccelerometerSensor.ACTION_AWARE_LINEAR_ACCELEROMETER_STOP`: received broadcast to stop the sensor.
++ `LinearAccelerometerSensor.ACTION_AWARE_LINEAR_ACCELEROMETER_SYNC`: received broadcast to send sync attempt to the host.
++ `LinearAccelerometerSensor.ACTION_AWARE_LINEAR_ACCELEROMETER_SET_LABEL`: received broadcast to set the data label. Label is expected in the `LinearAccelerometerSensor.EXTRA_LABEL` field of the intent extras.
+
+## Data Representations
+
+### LinearAccelerometer Data
+
+Contains the raw sensor data.
+
+| Field     | Type   | Description                                                     |
+| --------- | ------ | --------------------------------------------------------------- |
+| x         | Double  | value of X axis                                                 |
+| y         | Double  | value of Y axis                                                 |
+| z         | Double  | value of Z axis                                                 |
+| label     | String | Customizable label. Useful for data calibration or traceability |
+| deviceId  | String | AWARE device UUID                                               |
+| label     | String | Customizable label. Useful for data calibration or traceability |
+| timestamp | Int64   | unixtime milliseconds since 1970                                |
+| timezone  | Int    | Raw timezone offset of the device                          |
+| os        | String | Operating system of the device (ex. ios)                    |
+
 ## Example usage
 ```siwft
 var linearAccSensor = LinearAccelerometerSensor.init(LinearAccelerometerSensor.Config().apply{config in
     config.debug    = true
     config.dbType   = .REALM
     config.sensorObserver = Observer()
-    config.interval = 1
 })
 linearAccSensor.start()
 ```
 
 ```swift
 class Observer:LinearAccelerometerObserver{
-    func onChanged(data: LinearAccelerometerData) {
+    func onDataChanged(data: LinearAccelerometerData) {
         // Your code here...
     }
 }
