@@ -1,11 +1,11 @@
+platform:ios, '10.0'
+
 use_frameworks!
 
 target 'com.awareframework.ios.sensor.linearaccelerometer_Example' do
   pod 'com.awareframework.ios.sensor.linearaccelerometer', :path => '../'
 
   target 'com.awareframework.ios.sensor.linearaccelerometer_Tests' do
-    inherit! :search_paths
-
-    
+    inherit! :search_paths   
   end
 end

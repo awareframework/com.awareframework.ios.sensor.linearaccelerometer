@@ -23,13 +23,13 @@ extension LinearAccelerometerSensor{
     
     public static let ACTION_AWARE_LINEAR_ACCELEROMETER = "ACTION_AWARE_LINEAR_ACCELEROMETER"
     
-    public static let ACTION_AWARE_LINEAR_ACCELEROMETER_START = "com.awareframework.android.sensor.linearaccelerometer.SENSOR_START"
-    public static let ACTION_AWARE_LINEAR_ACCELEROMETER_STOP = "com.awareframework.android.sensor.linearaccelerometer.SENSOR_STOP"
+    public static let ACTION_AWARE_LINEAR_ACCELEROMETER_START = "com.awareframework.sensor.linearaccelerometer.SENSOR_START"
+    public static let ACTION_AWARE_LINEAR_ACCELEROMETER_STOP = "com.awareframework.sensor.linearaccelerometer.SENSOR_STOP"
     
-    public static let ACTION_AWARE_LINEAR_ACCELEROMETER_SET_LABEL = "com.awareframework.android.sensor.linearaccelerometer.ACTION_AWARE_LINEAR_ACCELEROMETER_SET_LABEL"
+    public static let ACTION_AWARE_LINEAR_ACCELEROMETER_SET_LABEL = "com.awareframework.sensor.linearaccelerometer.ACTION_AWARE_LINEAR_ACCELEROMETER_SET_LABEL"
     public static let EXTRA_LABEL = "label"
     
-    public static let ACTION_AWARE_LINEAR_ACCELEROMETER_SYNC = "com.awareframework.android.sensor.linearaccelerometer.SENSOR_SYNC"
+    public static let ACTION_AWARE_LINEAR_ACCELEROMETER_SYNC = "com.awareframework.sensor.linearaccelerometer.SENSOR_SYNC"
 }
 
 public protocol LinearAccelerometerObserver {
@@ -37,7 +37,7 @@ public protocol LinearAccelerometerObserver {
 }
 
 public class LinearAccelerometerSensor: AwareSensor {
-    var CONFIG = LinearAccelerometerSensor.Config()
+    public var CONFIG = LinearAccelerometerSensor.Config()
     var motion = CMMotionManager()
     var LAST_DATA:CMDeviceMotion?
     var LAST_TS:Double   = 0.0
