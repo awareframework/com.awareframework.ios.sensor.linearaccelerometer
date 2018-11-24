@@ -5,9 +5,6 @@
 [![License](https://img.shields.io/cocoapods/l/com.awareframework.ios.sensor.linearaccelerometer.svg?style=flat)](https://cocoapods.org/pods/com.awareframework.ios.sensor.linearaccelerometer)
 [![Platform](https://img.shields.io/cocoapods/p/com.awareframework.ios.sensor.linearaccelerometer.svg?style=flat)](https://cocoapods.org/pods/com.awareframework.ios.sensor.linearaccelerometer)
 
-## Example
-
-To run the example project, clone the repo, and run `pod install` from the Example directory first.
 
 ## Requirements
 iOS 10 or later
@@ -84,7 +81,7 @@ Contains the raw sensor data.
 | os        | String | Operating system of the device (ex. ios)                    |
 
 ## Example usage
-```siwft
+```swift
 var linearAccSensor = LinearAccelerometerSensor.init(LinearAccelerometerSensor.Config().apply{config in
     config.debug    = true
     config.dbType   = .REALM
