@@ -72,8 +72,20 @@ public class LinearAccelerometerSensor: AwareSensor {
         public var threshold: Double = 0.0
         
         public override init(){}
-        public init(_ json:JSON){
+        
+        public override func set(config: Dictionary<String, Any>){
+            super.set(config: config)
+            if let period = config["period"] as? Double {
+                self.period = period
+            }
             
+            if let threshold = config ["threshold"] as? Double {
+                self.threshold = threshold
+            }
+            
+            if let frequency = config["frequency"] as? Int {
+                self.frequency = frequency
+            }
         }
         
         public func apply(closure: (_ config: LinearAccelerometerSensor.Config) -> Void) -> Self {
@@ -82,7 +94,7 @@ public class LinearAccelerometerSensor: AwareSensor {
         }
     }
     
-    override convenience init(){
+    public override convenience init(){
         self.init(Config())
     }
     

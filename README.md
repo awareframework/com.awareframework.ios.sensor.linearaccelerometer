@@ -5,6 +5,11 @@
 [![License](https://img.shields.io/cocoapods/l/com.awareframework.ios.sensor.linearaccelerometer.svg?style=flat)](https://cocoapods.org/pods/com.awareframework.ios.sensor.linearaccelerometer)
 [![Platform](https://img.shields.io/cocoapods/p/com.awareframework.ios.sensor.linearaccelerometer.svg?style=flat)](https://cocoapods.org/pods/com.awareframework.ios.sensor.linearaccelerometer)
 
+This sensor module allows us to access the current **Linear Accelerometer** data. The acceleration that the user is giving to the device. The total acceleration of the device is equal to [gravity](https://developer.apple.com/documentation/coremotion/cmdevicemotion/1616164-gravity) plus the acceleration the user imparts to the device. The data is provided by CMDeviceMotion in Core Motion library. Please check the link below for details.
+
+[ Apple | Getting Processed Device-Motion Data ](https://developer.apple.com/documentation/coremotion/getting_processed_device-motion_data)
+
+[ Apple | CMDeviceMotion | gravity ](https://developer.apple.com/documentation/coremotion/cmdevicemotion/1616164-gravity)
 
 ## Requirements
 iOS 10 or later
@@ -28,7 +33,7 @@ import com_awareframework_ios_sensor_linearaccelerometer
 ### LinearAccelerometerSensor
 
 + `init(config:LinearAccelerometerSensor.Config?)` : Initializes the linear-accelerometer sensor with the optional configuration.
-+ `start()`: Starts the gyroscope sensor with the optional configuration.
++ `start()`: Starts the linear-accelerometer sensor with the optional configuration.
 + `stop()`: Stops the service.
 
 ### LinearAccelerometerSensor.Config
@@ -100,7 +105,7 @@ class Observer:LinearAccelerometerObserver{
 
 ## Author
 
-Yuuki Nishiyama, tetujin@ht.sfc.keio.ac.jp
+Yuuki Nishiyama, yuuki.nishiyama@oulu.fi
 
 ## License
 
