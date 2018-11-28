@@ -1,4 +1,4 @@
-# Aware Linear Accelerometer
+# AWARE: Linear Accelerometer
 
 [![CI Status](https://img.shields.io/travis/awareframework/com.awareframework.ios.sensor.linearaccelerometer.svg?style=flat)](https://travis-ci.org/awareframework/com.awareframework.ios.sensor.linearaccelerometer)
 [![Version](https://img.shields.io/cocoapods/v/com.awareframework.ios.sensor.linearaccelerometer.svg?style=flat)](https://cocoapods.org/pods/com.awareframework.ios.sensor.linearaccelerometer)
