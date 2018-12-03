@@ -140,7 +140,7 @@ public class LinearAccelerometerSensor: AwareSensor {
                     
                     self.dataBuffer.append(data)
                     
-                    if currentTime > self.LAST_SAVE + (self.CONFIG.period * 60) {
+                    if currentTime < self.LAST_SAVE + (self.CONFIG.period * 60) {
                         return
                     }
                     

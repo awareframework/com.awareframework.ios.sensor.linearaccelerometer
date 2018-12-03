@@ -19,6 +19,7 @@ class ViewController: UIViewController {
         sensor = LinearAccelerometerSensor.init(LinearAccelerometerSensor.Config().apply{config in
             config.debug = true
             config.sensorObserver = Observer()
+        
         });
         sensor?.start()
     }
