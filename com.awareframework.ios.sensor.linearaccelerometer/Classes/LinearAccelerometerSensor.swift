@@ -140,6 +140,7 @@ public class LinearAccelerometerSensor: AwareSensor {
                     
                     self.dataBuffer.append(data)
                     
+                    // print(currentTime, self.LAST_SAVE + (self.CONFIG.period * 60))
                     if currentTime < self.LAST_SAVE + (self.CONFIG.period * 60) {
                         return
                     }
@@ -152,18 +153,16 @@ public class LinearAccelerometerSensor: AwareSensor {
                     self.LAST_SAVE = currentTime
                 }
             }
-            if self.CONFIG.debug{ print(LinearAccelerometerSensor.TAG, "Gyroscope sensor active: \(self.CONFIG.frequency) hz") }
+            if self.CONFIG.debug{ print(LinearAccelerometerSensor.TAG, "Linear Accelerometer active: \(self.CONFIG.frequency) hz") }
             self.notificationCenter.post(name: .actionAwareLinearAccelerometerStart, object:nil)
         }
     }
     
     public override func stop() {
-        if self.motion.isGyroAvailable{
-            if self.motion.isGyroActive{
-                self.motion.stopGyroUpdates()
-                if self.CONFIG.debug{ print(LinearAccelerometerSensor.TAG, "Gyroscope sensor terminated") }
-                self.notificationCenter.post(name: .actionAwareLinearAccelerometerStop, object:nil)
-            }
+        if self.motion.isDeviceMotionAvailable && self.motion.isDeviceMotionActive {
+            self.motion.stopDeviceMotionUpdates()
+            if self.CONFIG.debug{ print(LinearAccelerometerSensor.TAG, "Linear Accelerometer terminated") }
+            self.notificationCenter.post(name: .actionAwareLinearAccelerometerStop, object:nil)
         }
     }
     
@@ -174,5 +173,10 @@ public class LinearAccelerometerSensor: AwareSensor {
             })
             self.notificationCenter.post(name: .actionAwareLinearAccelerometerSync, object:nil)
         }
+    }
+    
+    public func set(label:String){
+        self.CONFIG.label = label
+        self.notificationCenter.post(name: .actionAwareLinearAccelerometerSetLabel, object: nil, userInfo: [LinearAccelerometerSensor.EXTRA_LABEL:label])
     }
 }
