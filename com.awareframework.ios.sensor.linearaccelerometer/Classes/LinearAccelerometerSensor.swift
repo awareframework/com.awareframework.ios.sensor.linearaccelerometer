@@ -138,6 +138,7 @@ public class LinearAccelerometerSensor: AwareSensor {
                     data.y = y
                     data.z = z
                     data.eventTimestamp = Int64(dmData.timestamp*1000)
+                    data.label = self.CONFIG.label
                     
                     if let observer = self.CONFIG.sensorObserver {
                         observer.onDataChanged(data: data)

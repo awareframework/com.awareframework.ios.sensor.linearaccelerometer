@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'com.awareframework.ios.sensor.linearaccelerometer'
-  s.version       = '0.4.0'
+  s.version       = '0.4.1'
   s.summary          = 'A Linear Accelerometer Module for AWARE Framework.'
 
 # This description is used to generate tags and improve search results.
