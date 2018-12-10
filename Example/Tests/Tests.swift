@@ -17,70 +17,6 @@ class Tests: XCTestCase {
         super.tearDown()
     }
     
-    func testSensingFrequency(){
-        
-        #if targetEnvironment(simulator)
-        print("This test requires a real device.")
-        
-        #else
-        /////////// 10 FPS //////
-        let sensor = LinearAccelerometerSensor.init(LinearAccelerometerSensor.Config().apply{ config in
-            config.debug = true
-            config.dbType = .REALM
-            config.frequency = 10
-        })
-        sensor.start() // start sensor
-        print(1.0/Double(sensor.CONFIG.frequency))
-        let expect = expectation(description: "Sensing test (10FPS)")
-        let observer = NotificationCenter.default.addObserver(forName: Notification.Name.actionAwareLinearAccelerometer,
-                                                              object: nil,
-                                                              queue: .main) { (notification) in
-            if let engine = sensor.dbEngine {
-                if let results =  engine.fetch(LinearAccelerometerData.TABLE_NAME, LinearAccelerometerData.self, nil) as? Results<Object>{
-                    print(results.count)
-                    if (results.count > 1) {
-                        let idealCount = 60*sensor.CONFIG.frequency
-                        print("ideal count = ",idealCount)
-                        if results.count >= (idealCount-100) && results.count <= (idealCount+100) {
-                            for object in results{
-                                if let o = object as? AwareObject{
-                                    engine.remove(o, LinearAccelerometerData.TABLE_NAME)
-                                }
-                            }
-                            expect.fulfill()
-                        }else{
-                            XCTFail()
-                        }
-                        
-                    }
-                }
-            }
-        }
-        wait(for: [expect], timeout: (sensor.CONFIG.period * 60) + 5)
-        NotificationCenter.default.removeObserver(observer)
-        sensor.stop()
-        
-        #endif
-    }
-    
-    func testSync(){
-        //        let sensor = LinearAccelerometerSensor.init(LinearAccelerometerSensor.Config().apply{ config in
-        //            config.debug = true
-        //            config.dbType = .REALM
-        //            config.dbHost = "node.awareframework.com/dgc"
-        //        })
-        //        sensor.start();
-        //        sensor.enable();
-        //        sensor.sync(force: true)
-        
-        //        let syncManager = DbSyncManager.Builder()
-        //            .setBatteryOnly(false)
-        //            .setWifiOnly(false)
-        //            .setSyncInterval(1)
-        //            .build()
-        //
-        //        syncManager.start()
-    }
     
     func testObserver(){
         #if targetEnvironment(simulator)
@@ -222,5 +158,186 @@ class Tests: XCTestCase {
         XCTAssertEqual(threshold, sensor.CONFIG.threshold)
         XCTAssertEqual(period, sensor.CONFIG.period)
         
+    }
+    
+    func testSensorFrequency(){
+        
+        #if targetEnvironment(simulator)
+        print("This test requires a real LinearAccelerometer.")
+        
+        #else
+        /////////// 10 FPS //////
+        let sensor = LinearAccelerometerSensor.init(LinearAccelerometerSensor.Config().apply{ config in
+            config.debug = true
+            config.dbType = .REALM
+            config.frequency = 10
+            config.period = 1.0/60.0
+            config.dbPath = "sensor_frequency"
+        })
+        
+        if let engine = sensor.dbEngine {
+            engine.removeAll(LinearAccelerometerData.self)
+        }
+        
+        let expect = expectation(description: "Frequency Test (10FPS)")
+        let center = NotificationCenter.default
+        let observer = center.addObserver(forName: Notification.Name.actionAwareLinearAccelerometer,
+                                          object: sensor,
+                                          queue: .main) { (notification) in
+                                            if let engine = sensor.dbEngine {
+                                                engine.fetch(LinearAccelerometerData.self, nil){ (resultsObject, error) in
+                                                    if let results = resultsObject as? Results<Object> {
+                                                        print("ideal count = ",sensor.CONFIG.frequency)
+                                                        print("real count  = ",results.count)
+                                                        if results.count > 0 {
+                                                            if results.count >= sensor.CONFIG.frequency-1 &&
+                                                                results.count <= (sensor.CONFIG.frequency+1) {
+                                                                expect.fulfill()
+                                                            }else{
+                                                                XCTFail()
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+        }
+        
+        sensor.start() // start sensor
+        
+        wait(for: [expect], timeout: 20)
+        NotificationCenter.default.removeObserver(observer)
+        sensor.stop()
+        
+        #endif
+    }
+    
+    
+    
+    
+    
+    func testSyncModule(){
+        #if targetEnvironment(simulator)
+        
+        print("This test requires a real LinearAccelerometer.")
+        
+        #else
+        // success //
+        let sensor = LinearAccelerometerSensor.init(LinearAccelerometerSensor.Config().apply{ config in
+            config.debug = true
+            config.dbType = .REALM
+            config.dbHost = "node.awareframework.com:1001"
+            config.dbPath = "sync_db"
+        })
+        if let engine = sensor.dbEngine as? RealmEngine {
+            engine.removeAll(LinearAccelerometerData.self)
+            for _ in 0..<100 {
+                engine.save(LinearAccelerometerData())
+            }
+        }
+        let successExpectation = XCTestExpectation(description: "success sync")
+        let observer = NotificationCenter.default.addObserver(forName: Notification.Name.actionAwareLinearAccelerometerSyncCompletion,
+                                                              object: sensor, queue: .main) { (notification) in
+                                                                if let userInfo = notification.userInfo{
+                                                                    if let status = userInfo["status"] as? Bool {
+                                                                        if status == true {
+                                                                            successExpectation.fulfill()
+                                                                        }
+                                                                    }
+                                                                }
+        }
+        sensor.sync(force: true)
+        wait(for: [successExpectation], timeout: 20)
+        NotificationCenter.default.removeObserver(observer)
+        
+        ////////////////////////////////////
+        
+        // failure //
+        let sensor2 = LinearAccelerometerSensor.init(LinearAccelerometerSensor.Config().apply{ config in
+            config.debug = true
+            config.dbType = .REALM
+            config.dbHost = "node.awareframework.com.com" // wrong url
+            config.dbPath = "sync_db"
+        })
+        let failureExpectation = XCTestExpectation(description: "failure sync")
+        let failureObserver = NotificationCenter.default.addObserver(forName: Notification.Name.actionAwareLinearAccelerometerSyncCompletion,
+                                                                     object: sensor2, queue: .main) { (notification) in
+                                                                        if let userInfo = notification.userInfo{
+                                                                            if let status = userInfo["status"] as? Bool {
+                                                                                if status == false {
+                                                                                    failureExpectation.fulfill()
+                                                                                }
+                                                                            }
+                                                                        }
+        }
+        if let engine = sensor2.dbEngine as? RealmEngine {
+            engine.removeAll(LinearAccelerometerData.self)
+            for _ in 0..<100 {
+                engine.save(LinearAccelerometerData())
+            }
+        }
+        sensor2.sync(force: true)
+        wait(for: [failureExpectation], timeout: 20)
+        NotificationCenter.default.removeObserver(failureObserver)
+        
+        #endif
+    }
+    
+    //////////// storage ///////////
+    var realmToken:NotificationToken? = nil
+    
+    func testSensorModule(){
+        
+        #if targetEnvironment(simulator)
+        
+        print("This test requires a real LinearAccelerometer.")
+        
+        #else
+        
+        let sensor = LinearAccelerometerSensor.init(LinearAccelerometerSensor.Config().apply{ config in
+            config.debug = true
+            config.dbType = .REALM
+            config.dbPath = "sensor_module"
+            config.period = 1.0/60.0
+        })
+        let expect = expectation(description: "sensor module")
+        if let realmEngine = sensor.dbEngine as? RealmEngine {
+            // remove old data
+            realmEngine.removeAll(LinearAccelerometerData.self)
+            // get a RealmEngine Instance
+            if let realm = realmEngine.getRealmInstance() {
+                // set Realm DB observer
+                realmToken = realm.observe { (notification, realm) in
+                    switch notification {
+                    case .didChange:
+                        // check database size
+                        let results = realm.objects(LinearAccelerometerData.self)
+                        print(results.count)
+                        XCTAssertGreaterThanOrEqual(results.count, 1)
+                        realm.invalidate()
+                        expect.fulfill()
+                        self.realmToken = nil
+                        break;
+                    case .refreshRequired:
+                        break;
+                    }
+                }
+            }
+        }
+        
+        let storageExpect = expectation(description: "sensor storage notification")
+        var token: NSObjectProtocol?
+        token = NotificationCenter.default.addObserver(forName: Notification.Name.actionAwareLinearAccelerometer,
+                                                       object: sensor,
+                                                       queue: .main) { (notification) in
+                                                        storageExpect.fulfill()
+                                                        NotificationCenter.default.removeObserver(token!)
+        }
+        
+        sensor.start() // start sensor
+        
+        wait(for: [expect,storageExpect], timeout: 65)
+        sensor.stop()
+        
+        #endif
     }
 }

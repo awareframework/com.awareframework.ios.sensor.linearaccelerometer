@@ -16,6 +16,7 @@ extension Notification.Name{
     public static let actionAwareLinearAccelerometerStop  = Notification.Name(LinearAccelerometerSensor.ACTION_AWARE_LINEAR_ACCELEROMETER_STOP)
     public static let actionAwareLinearAccelerometerSync  = Notification.Name(LinearAccelerometerSensor.ACTION_AWARE_LINEAR_ACCELEROMETER_SYNC)
     public static let actionAwareLinearAccelerometerSetLabel = Notification.Name(LinearAccelerometerSensor.ACTION_AWARE_LINEAR_ACCELEROMETER_SET_LABEL)
+    public static let actionAwareLinearAccelerometerSyncCompletion  = Notification.Name(LinearAccelerometerSensor.ACTION_AWARE_LINEAR_ACCELEROMETER_SYNC_COMPLETION)
 }
 
 extension LinearAccelerometerSensor{
@@ -30,6 +31,10 @@ extension LinearAccelerometerSensor{
     public static let EXTRA_LABEL = "label"
     
     public static let ACTION_AWARE_LINEAR_ACCELEROMETER_SYNC = "com.awareframework.sensor.linearaccelerometer.SENSOR_SYNC"
+    
+    public static let ACTION_AWARE_LINEAR_ACCELEROMETER_SYNC_COMPLETION = "com.awareframework.ios.sensor.linearaccelerometer.SENSOR_SYNC_COMPLETION"
+    public static let EXTRA_STATUS = "status"
+    public static let EXTRA_ERROR = "error"
 }
 
 public protocol LinearAccelerometerObserver {
@@ -40,8 +45,8 @@ public class LinearAccelerometerSensor: AwareSensor {
     public var CONFIG = LinearAccelerometerSensor.Config()
     var motion = CMMotionManager()
     var LAST_DATA:CMDeviceMotion?
-    var LAST_TS:Double   = 0.0
-    var LAST_SAVE:Double = 0.0
+    var LAST_TS:Double   = Date().timeIntervalSince1970
+    var LAST_SAVE:Double = Date().timeIntervalSince1970
     public var dataBuffer = Array<LinearAccelerometerData>()
     
     public class Config:SensorConfig{
@@ -146,15 +151,27 @@ public class LinearAccelerometerSensor: AwareSensor {
                     }
                     
                     let dataArray = Array(self.dataBuffer)
-                    self.dbEngine?.save(dataArray, LinearAccelerometerData.TABLE_NAME)
-                    self.notificationCenter.post(name: .actionAwareLinearAccelerometer, object: nil)
                     
+                    if let engine = self.dbEngine{
+                        let queue = DispatchQueue(label: "com.awareframework.ios.sensor.linearaccelerometer.save.queue")
+                        queue.async {
+                            engine.save(dataArray) { (error) in
+                                if error == nil {
+                                    DispatchQueue.main.async {
+                                        self.notificationCenter.post(name: .actionAwareLinearAccelerometer, object: self)
+                                    }
+                                }else{
+                                    if self.CONFIG.debug { print(error!) }
+                                }
+                            }
+                        }
+                    }
                     self.dataBuffer.removeAll()
                     self.LAST_SAVE = currentTime
                 }
             }
             if self.CONFIG.debug{ print(LinearAccelerometerSensor.TAG, "Linear Accelerometer active: \(self.CONFIG.frequency) hz") }
-            self.notificationCenter.post(name: .actionAwareLinearAccelerometerStart, object:nil)
+            self.notificationCenter.post(name: .actionAwareLinearAccelerometerStart, object:self)
         }
     }
     
@@ -162,7 +179,7 @@ public class LinearAccelerometerSensor: AwareSensor {
         if self.motion.isDeviceMotionAvailable && self.motion.isDeviceMotionActive {
             self.motion.stopDeviceMotionUpdates()
             if self.CONFIG.debug{ print(LinearAccelerometerSensor.TAG, "Linear Accelerometer terminated") }
-            self.notificationCenter.post(name: .actionAwareLinearAccelerometerStop, object:nil)
+            self.notificationCenter.post(name: .actionAwareLinearAccelerometerStop, object:self)
         }
     }
     
@@ -170,13 +187,25 @@ public class LinearAccelerometerSensor: AwareSensor {
         if let engine = self.dbEngine{
             engine.startSync(LinearAccelerometerData.TABLE_NAME, LinearAccelerometerData.self, DbSyncConfig().apply{config in
                 config.debug = self.CONFIG.debug
+                config.dispatchQueue = DispatchQueue(label: "com.awareframework.ios.sensor.linearaccelerometer.sync.queue")
+                config.completionHandler = { (status, error) in
+                    var userInfo: Dictionary<String,Any> = [LinearAccelerometerSensor.EXTRA_STATUS :status]
+                    if let e = error {
+                        userInfo[LinearAccelerometerSensor.EXTRA_ERROR] = e
+                    }
+                    self.notificationCenter.post(name: .actionAwareLinearAccelerometerSyncCompletion,
+                                                 object: self,
+                                                 userInfo:userInfo)
+                }
             })
-            self.notificationCenter.post(name: .actionAwareLinearAccelerometerSync, object:nil)
+            self.notificationCenter.post(name: .actionAwareLinearAccelerometerSync, object:self)
         }
     }
     
-    public func set(label:String){
+    public override func set(label:String){
         self.CONFIG.label = label
-        self.notificationCenter.post(name: .actionAwareLinearAccelerometerSetLabel, object: nil, userInfo: [LinearAccelerometerSensor.EXTRA_LABEL:label])
+        self.notificationCenter.post(name: .actionAwareLinearAccelerometerSetLabel,
+                                     object: self,
+                                     userInfo: [LinearAccelerometerSensor.EXTRA_LABEL:label])
     }
 }
