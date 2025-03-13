@@ -1,9 +1,6 @@
 # AWARE: Linear Accelerometer
 
-[![CI Status](https://img.shields.io/travis/awareframework/com.awareframework.ios.sensor.linearaccelerometer.svg?style=flat)](https://travis-ci.org/awareframework/com.awareframework.ios.sensor.linearaccelerometer)
-[![Version](https://img.shields.io/cocoapods/v/com.awareframework.ios.sensor.linearaccelerometer.svg?style=flat)](https://cocoapods.org/pods/com.awareframework.ios.sensor.linearaccelerometer)
-[![License](https://img.shields.io/cocoapods/l/com.awareframework.ios.sensor.linearaccelerometer.svg?style=flat)](https://cocoapods.org/pods/com.awareframework.ios.sensor.linearaccelerometer)
-[![Platform](https://img.shields.io/cocoapods/p/com.awareframework.ios.sensor.linearaccelerometer.svg?style=flat)](https://cocoapods.org/pods/com.awareframework.ios.sensor.linearaccelerometer)
+[![Swift Package Manager compatible](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
 
 This sensor module allows us to access the current **Linear Accelerometer** data. The acceleration that the user is giving to the device. The total acceleration of the device is equal to [gravity](https://developer.apple.com/documentation/coremotion/cmdevicemotion/1616164-gravity) plus the acceleration the user imparts to the device. The data is provided by CMDeviceMotion in Core Motion library. Please check the link below for details.
 
@@ -12,9 +9,30 @@ This sensor module allows us to access the current **Linear Accelerometer** data
 [ Apple | CMDeviceMotion | gravity ](https://developer.apple.com/documentation/coremotion/cmdevicemotion/1616164-gravity)
 
 ## Requirements
-iOS 10 or later
+iOS 13 or later
+
 
 ## Installation
+
+
+You can integrate this framework into your project via Swift Package Manager (SwiftPM) or CocoaPods.
+
+### SwiftPM
+1. Open Package Manager Windows
+    * Open `Xcode` -> Select `Menu Bar` -> `File` -> `App Package Dependencies...` 
+
+2. Find the package using the manager
+    * Select `Search Package URL` and type `git@github.com:awareframework/com.awareframework.ios.sensor.accelerometer.git`
+
+3. Import the package into your target.
+
+4. Import com.awareframework.ios.sensor.linearaccelerometer library into your source code.
+```swift
+import com_awareframework_ios_sensor_linearaccelerometer
+```
+
+### CocoaPods
+
 
 com.awareframework.ios.sensor.linearaccelerometer is available through [CocoaPods](https://cocoapods.org). 
 
@@ -105,7 +123,7 @@ class Observer:LinearAccelerometerObserver{
 
 ## Author
 
-Yuuki Nishiyama, yuukin@iis.u-tokyo.ac.jp
+Yuuki Nishiyama (The University of Tokyo), nishiyama@csis.u-tokyo.ac.jp
 
 ## License
 
