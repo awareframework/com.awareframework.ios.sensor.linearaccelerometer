@@ -8,7 +8,8 @@
 import UIKit
 import CoreMotion
 import SwiftyJSON
-import com_awareframework_ios_sensor_core
+import com_awareframework_ios_core
+import GRDB
 
 extension Notification.Name{
     public static let actionAwareLinearAccelerometer      = Notification.Name(LinearAccelerometerSensor.ACTION_AWARE_LINEAR_ACCELEROMETER)
@@ -48,6 +49,13 @@ public class LinearAccelerometerSensor: AwareSensor {
     var LAST_TS:Double   = Date().timeIntervalSince1970
     var LAST_SAVE:Double = Date().timeIntervalSince1970
     public var dataBuffer = Array<LinearAccelerometerData>()
+    private let motionQueue: OperationQueue = {
+        let queue = OperationQueue()
+        queue.name = "com.awareframework.ios.sensor.linearaccelerometer.motion.queue"
+        queue.maxConcurrentOperationCount = 1
+        queue.qualityOfService = .userInitiated
+        return queue
+    }()
     
     public class Config:SensorConfig{
         /**
@@ -76,7 +84,11 @@ public class LinearAccelerometerSensor: AwareSensor {
          */
         public var threshold: Double = 0.0
         
-        public override init(){}
+        public override init(){
+            super.init()
+            self.dbPath = "aware_linear_accelerometer"
+            self.dbTableName = LinearAccelerometerData.TABLE_NAME
+        }
         
         public override func set(config: Dictionary<String, Any>){
             super.set(config: config)
@@ -107,13 +119,14 @@ public class LinearAccelerometerSensor: AwareSensor {
         super.init()
         self.CONFIG = config
         self.initializeDbEngine(config: config)
+        self.initializeTable()
         if config.debug{ print(LinearAccelerometerSensor.TAG, "Linear Accelerometer is created.") }
     }
     
     public override func start() {
         if self.motion.isDeviceMotionAvailable && !self.motion.isDeviceMotionActive {
             self.motion.deviceMotionUpdateInterval = 1.0/Double(self.CONFIG.frequency)
-            self.motion.startDeviceMotionUpdates(to: .main) { (deviceMotionData, error) in
+            self.motion.startDeviceMotionUpdates(to: motionQueue) { (deviceMotionData, error) in
                 if let dmData = deviceMotionData {
                     let x = dmData.userAcceleration.x
                     let y = dmData.userAcceleration.y
@@ -132,13 +145,14 @@ public class LinearAccelerometerSensor: AwareSensor {
                     let currentTime:Double = Date().timeIntervalSince1970
                     self.LAST_TS = currentTime
                     
-                    let data = LinearAccelerometerData()
-                    data.timestamp = Int64(currentTime*1000)
-                    data.x = x
-                    data.y = y
-                    data.z = z
-                    data.eventTimestamp = Int64(dmData.timestamp*1000)
-                    data.label = self.CONFIG.label
+                    let data = LinearAccelerometerData(
+                        x: x,
+                        y: y,
+                        z: z,
+                        timestamp: Int64(currentTime*1000),
+                        eventTimestamp: Int64(dmData.timestamp*1000),
+                        label: self.CONFIG.label
+                    )
                     
                     if let observer = self.CONFIG.sensorObserver {
                         observer.onDataChanged(data: data)
@@ -179,6 +193,7 @@ public class LinearAccelerometerSensor: AwareSensor {
     public override func stop() {
         if self.motion.isDeviceMotionAvailable && self.motion.isDeviceMotionActive {
             self.motion.stopDeviceMotionUpdates()
+            self.motionQueue.cancelAllOperations()
             if self.CONFIG.debug{ print(LinearAccelerometerSensor.TAG, "Linear Accelerometer terminated") }
             self.notificationCenter.post(name: .actionAwareLinearAccelerometerStop, object:self)
         }
@@ -186,7 +201,7 @@ public class LinearAccelerometerSensor: AwareSensor {
     
     public override func sync(force: Bool = false) {
         if let engine = self.dbEngine{
-            engine.startSync(LinearAccelerometerData.TABLE_NAME, LinearAccelerometerData.self, DbSyncConfig().apply{config in
+            engine.startSync(DbSyncConfig().apply{config in
                 config.debug = self.CONFIG.debug
                 config.dispatchQueue = DispatchQueue(label: "com.awareframework.ios.sensor.linearaccelerometer.sync.queue")
                 config.completionHandler = { (status, error) in
@@ -208,5 +223,20 @@ public class LinearAccelerometerSensor: AwareSensor {
         self.notificationCenter.post(name: .actionAwareLinearAccelerometerSetLabel,
                                      object: self,
                                      userInfo: [LinearAccelerometerSensor.EXTRA_LABEL:label])
+    }
+    
+    private func initializeTable() {
+        guard let sqliteEngine = self.dbEngine as? SQLiteEngine,
+              let queue = sqliteEngine.getSQLiteInstance() else {
+            return
+        }
+        
+        do {
+            try LinearAccelerometerData.createTable(queue: queue)
+        } catch {
+            if self.CONFIG.debug {
+                print(LinearAccelerometerSensor.TAG, "Failed to initialize table: \(error)")
+            }
+        }
     }
 }
