@@ -120,6 +120,9 @@ public class LinearAccelerometerSensor: AwareSensor {
         self.CONFIG = config
         self.initializeDbEngine(config: config)
         self.initializeTable()
+        super.syncConfig = DbSyncConfig().apply { c in
+            c.dispatchQueue = DispatchQueue(label: "com.awareframework.ios.sensor.linearaccelerometer.sync.queue")
+        }
         if config.debug{ print(LinearAccelerometerSensor.TAG, "Linear Accelerometer is created.") }
     }
     
@@ -200,22 +203,15 @@ public class LinearAccelerometerSensor: AwareSensor {
     }
     
     public override func sync(force: Bool = false) {
-        if let engine = self.dbEngine{
-            engine.startSync(DbSyncConfig().apply{config in
-                config.debug = self.CONFIG.debug
-                config.dispatchQueue = DispatchQueue(label: "com.awareframework.ios.sensor.linearaccelerometer.sync.queue")
-                config.completionHandler = { (status, error) in
-                    var userInfo: Dictionary<String,Any> = [LinearAccelerometerSensor.EXTRA_STATUS :status]
-                    if let e = error {
-                        userInfo[LinearAccelerometerSensor.EXTRA_ERROR] = e
-                    }
-                    self.notificationCenter.post(name: .actionAwareLinearAccelerometerSyncCompletion,
-                                                 object: self,
-                                                 userInfo:userInfo)
-                }
-            })
-            self.notificationCenter.post(name: .actionAwareLinearAccelerometerSync, object:self)
+        guard let engine = self.dbEngine, let syncConfig = self.syncConfig else { return }
+        syncConfig.debug = self.CONFIG.debug
+        syncConfig.completionHandler = { (status, error) in
+            var userInfo: Dictionary<String,Any> = [LinearAccelerometerSensor.EXTRA_STATUS: status]
+            if let e = error { userInfo[LinearAccelerometerSensor.EXTRA_ERROR] = e }
+            self.notificationCenter.post(name: .actionAwareLinearAccelerometerSyncCompletion, object: self, userInfo: userInfo)
         }
+        engine.startSync(syncConfig)
+        self.notificationCenter.post(name: .actionAwareLinearAccelerometerSync, object: self)
     }
     
     public override func set(label:String){

@@ -18,7 +18,7 @@ public struct LinearAccelerometerData: BaseDbModelSQLite {
     public var os: String = "iOS"
     public var jsonVersion: Int = 1
     
-    public static let databaseTableName = "linearAccelerometerData"
+    public static let databaseTableName = "ios_linear_accelerometer"
     public static let TABLE_NAME = databaseTableName
     
     public var eventTimestamp: Int64 = 0

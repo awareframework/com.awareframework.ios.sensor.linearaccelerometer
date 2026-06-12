@@ -71,23 +71,25 @@ Class to hold the configuration of the sensor.
 
 Contains the raw sensor data.
 
-| Field     | Type   | Description                                                     |
-| --------- | ------ | --------------------------------------------------------------- |
-| x         | Double  | value of X axis                                                 |
-| y         | Double  | value of Y axis                                                 |
-| z         | Double  | value of Z axis                                                 |
-| label     | String | Customizable label. Useful for data calibration or traceability |
-| deviceId  | String | AWARE device UUID                                               |
-| label     | String | Customizable label. Useful for data calibration or traceability |
-| timestamp | Int64   | unixtime milliseconds since 1970                                |
-| timezone  | Int    | Raw timezone offset of the device                          |
-| os        | String | Operating system of the device (ex. ios)                    |
+| Field          | Type   | Description                                                     |
+| -------------- | ------ | --------------------------------------------------------------- |
+| x              | Double | value of X axis                                                 |
+| y              | Double | value of Y axis                                                 |
+| z              | Double | value of Z axis                                                 |
+| eventTimestamp | Int64  | Unixtime milliseconds of the actual sensor event                |
+| accuracy       | Int    | Accuracy of the sensor data                                     |
+| label          | String | Customizable label. Useful for data calibration or traceability |
+| deviceId       | String | AWARE device UUID                                               |
+| timestamp      | Int64  | unixtime milliseconds since 1970                                |
+| timezone       | Int    | Raw timezone offset of the device                               |
+| os             | String | Operating system of the device (ex. ios)                        |
+| jsonVersion    | Int    | JSON schema version                                             |
 
 ## Example usage
 ```swift
 var linearAccSensor = LinearAccelerometerSensor.init(LinearAccelerometerSensor.Config().apply{config in
     config.debug    = true
-    config.dbType   = .REALM
+
     config.sensorObserver = Observer()
 })
 linearAccSensor.start()
