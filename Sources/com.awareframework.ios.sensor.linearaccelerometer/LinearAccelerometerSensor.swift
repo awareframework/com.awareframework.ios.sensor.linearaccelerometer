@@ -48,6 +48,7 @@ public class LinearAccelerometerSensor: AwareSensor {
     var LAST_DATA:CMDeviceMotion?
     var LAST_TS:Double   = Date().timeIntervalSince1970
     var LAST_SAVE:Double = Date().timeIntervalSince1970
+    private var bootReferenceTime: Double = 0
     public var dataBuffer = Array<LinearAccelerometerData>()
     private let motionQueue: OperationQueue = {
         let queue = OperationQueue()
@@ -128,6 +129,7 @@ public class LinearAccelerometerSensor: AwareSensor {
     
     public override func start() {
         if self.motion.isDeviceMotionAvailable && !self.motion.isDeviceMotionActive {
+            bootReferenceTime = Date().timeIntervalSince1970 - ProcessInfo.processInfo.systemUptime
             self.motion.deviceMotionUpdateInterval = 1.0/Double(self.CONFIG.frequency)
             self.motion.startDeviceMotionUpdates(to: motionQueue) { (deviceMotionData, error) in
                 if let dmData = deviceMotionData {
@@ -147,13 +149,13 @@ public class LinearAccelerometerSensor: AwareSensor {
                     
                     let currentTime:Double = Date().timeIntervalSince1970
                     self.LAST_TS = currentTime
-                    
+
                     let data = LinearAccelerometerData(
                         x: x,
                         y: y,
                         z: z,
                         timestamp: Int64(currentTime*1000),
-                        eventTimestamp: Int64(dmData.timestamp*1000),
+                        eventTimestamp: Int64((self.bootReferenceTime + dmData.timestamp)*1000),
                         label: self.CONFIG.label
                     )
                     

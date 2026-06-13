@@ -86,7 +86,10 @@ public struct LinearAccelerometerData: BaseDbModelSQLite {
             "x": x,
             "y": y,
             "z": z,
-            "accuracy": accuracy
+            "accuracy": accuracy,
+            "os": os,
+            "timezone": timezone,
+            "jsonVersion": jsonVersion,
         ]
     }
 }
