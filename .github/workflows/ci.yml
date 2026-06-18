@@ -31,29 +31,39 @@ jobs:
           SCHEME=$(swift package dump-package | python3 -c "import json,sys; print(json.load(sys.stdin)['name'])")
           echo "SCHEME=$SCHEME" >> "$GITHUB_ENV"
 
-          # Find the latest available iPhone simulator name (name-based, more robust than UDID)
-          SIM_NAME=$(xcrun simctl list devices available --json | python3 -c "
+          # Find the latest available iPhone simulator and use its UDID so the
+          # destination cannot resolve to a different runtime with the same name.
+          SIM_INFO=$(xcrun simctl list devices available --json | python3 -c "
           import json, sys
           devs = json.load(sys.stdin)['devices']
           iphones = [
-              (rt, d['name'])
+              (rt, d['name'], d['udid'])
               for rt, dl in devs.items()
               for d in dl
               if 'iOS' in rt and 'iPhone' in d['name'] and d.get('isAvailable', True)
           ]
           iphones.sort(reverse=True)
-          print(iphones[0][1] if iphones else 'iPhone 16')
+          if not iphones:
+              raise SystemExit('No available iPhone simulator found')
+          rt, name, udid = iphones[0]
+          print(f'{udid}|{name}|{rt}')
           ")
+          SIM_ID="${SIM_INFO%%|*}"
+          SIM_REST="${SIM_INFO#*|}"
+          SIM_NAME="${SIM_REST%%|*}"
+          SIM_RUNTIME="${SIM_REST#*|}"
+          echo "SIM_ID=$SIM_ID" >> "$GITHUB_ENV"
           echo "SIM_NAME=$SIM_NAME" >> "$GITHUB_ENV"
+          echo "SIM_RUNTIME=$SIM_RUNTIME" >> "$GITHUB_ENV"
           echo "Detected scheme: $SCHEME"
-          echo "Detected simulator: $SIM_NAME"
+          echo "Detected simulator: $SIM_NAME ($SIM_RUNTIME, $SIM_ID)"
 
       - name: Build
         id: build
         run: |
           xcodebuild build \
             -scheme "$SCHEME" \
-            -destination "platform=iOS Simulator,name=$SIM_NAME" \
+            -destination "platform=iOS Simulator,id=$SIM_ID" \
             -sdk iphonesimulator \
             2>&1 | tee build_output.txt; exit "${PIPESTATUS[0]}"
         continue-on-error: true
@@ -64,7 +74,7 @@ jobs:
         run: |
           xcodebuild test \
             -scheme "$SCHEME" \
-            -destination "platform=iOS Simulator,name=$SIM_NAME" \
+            -destination "platform=iOS Simulator,id=$SIM_ID" \
             -sdk iphonesimulator \
             -configuration Debug \
             -enableCodeCoverage YES \
