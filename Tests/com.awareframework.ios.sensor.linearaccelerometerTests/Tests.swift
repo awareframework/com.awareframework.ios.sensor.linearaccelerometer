@@ -4,6 +4,12 @@ import com_awareframework_ios_core
 import GRDB
 
 final class Tests: XCTestCase {
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        try FileManager.default.createDirectory(at: documentsURL, withIntermediateDirectories: true)
+    }
     
     func testControllers() {
         let sensor = LinearAccelerometerSensor(LinearAccelerometerSensor.Config().apply { config in
