@@ -76,30 +76,30 @@ final class Tests: XCTestCase {
     }
     
     func testConfig() {
-        let frequency = 1
+        let samplingFrequencyHz = 1
         let threshold = 0.5
-        let period = 1.0
-        let config: [String: Any] = ["frequency": frequency, "threshold": threshold, "period": period]
+        let saveIntervalSeconds = 1.0
+        let config: [String: Any] = ["samplingFrequencyHz": samplingFrequencyHz, "threshold": threshold, "saveIntervalSeconds": saveIntervalSeconds]
         
         var sensor = LinearAccelerometerSensor(LinearAccelerometerSensor.Config(config))
-        XCTAssertEqual(frequency, sensor.CONFIG.frequency)
+        XCTAssertEqual(samplingFrequencyHz, sensor.CONFIG.samplingFrequencyHz)
         XCTAssertEqual(threshold, sensor.CONFIG.threshold)
-        XCTAssertEqual(period, sensor.CONFIG.period)
+        XCTAssertEqual(saveIntervalSeconds, sensor.CONFIG.saveIntervalSeconds)
         
         sensor = LinearAccelerometerSensor(LinearAccelerometerSensor.Config().apply { config in
-            config.frequency = frequency
+            config.samplingFrequencyHz = samplingFrequencyHz
             config.threshold = threshold
-            config.period = period
+            config.saveIntervalSeconds = saveIntervalSeconds
         })
-        XCTAssertEqual(frequency, sensor.CONFIG.frequency)
+        XCTAssertEqual(samplingFrequencyHz, sensor.CONFIG.samplingFrequencyHz)
         XCTAssertEqual(threshold, sensor.CONFIG.threshold)
-        XCTAssertEqual(period, sensor.CONFIG.period)
+        XCTAssertEqual(saveIntervalSeconds, sensor.CONFIG.saveIntervalSeconds)
         
         sensor = LinearAccelerometerSensor()
         sensor.CONFIG.set(config: config)
-        XCTAssertEqual(frequency, sensor.CONFIG.frequency)
+        XCTAssertEqual(samplingFrequencyHz, sensor.CONFIG.samplingFrequencyHz)
         XCTAssertEqual(threshold, sensor.CONFIG.threshold)
-        XCTAssertEqual(period, sensor.CONFIG.period)
+        XCTAssertEqual(saveIntervalSeconds, sensor.CONFIG.saveIntervalSeconds)
     }
     
     func testSQLiteStorage() {
